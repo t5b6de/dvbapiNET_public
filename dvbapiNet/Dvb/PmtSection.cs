@@ -11,6 +11,14 @@ namespace dvbapiNet.Dvb
         private int _PcrPid;
         private List<ElementaryStream> _Streams;
 
+        public int PcrPid
+        {
+            get
+            {
+                return _PcrPid;
+            }
+        }
+
         public int ServiceId
         {
             get

@@ -2,6 +2,7 @@
 using dvbapiNet.Log;
 using dvbapiNet.Log.Locale;
 using dvbapiNet.Oscam;
+using dvbapiNet.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +53,9 @@ namespace PluginDebugger
 
             _ApiClient.Dispose();
 
+            Globals.Dispose();
             Console.WriteLine("Beendet.");
+            Thread.Sleep(1500);
         }
 
         private static DvbApiClient _ApiClient;
@@ -61,37 +64,22 @@ namespace PluginDebugger
         {
             string cConfigSection = "dvbapi";
 
-            string srv = Globals.Config.GetValue(cConfigSection, "server");
-            int? port = Globals.Config.GetInt32Value(cConfigSection, "port");
-            bool? old = Globals.Config.GetBoolValue(cConfigSection, "oldproto");
+            string srv = "";
+            int port = 0;
+            bool old = false;
 
-            int? adapterOffset = Globals.Config.GetInt32Value(cConfigSection, "offset");
+            int adapterOffset = 0;
 
-            if (string.IsNullOrWhiteSpace(srv)) // fallback default:
-                srv = Globals.Defaults.GetValue(cConfigSection, "server");
+            Globals.Config.Get(cConfigSection, "server", ref srv);
+            Globals.Config.Get(cConfigSection, "oldproto", ref old);
 
-            if (port == null)
-                port = Globals.Defaults.GetInt32Value(cConfigSection, "port");
+            if (Globals.Config.Get(cConfigSection, "offset", 0, 128, ref adapterOffset) != Configuration.ConfigRes.Ok)
+                Console.WriteLine("Adaper Offset ungültig oder fehlt, nutze standard.");
 
-            if (adapterOffset == null)
-                adapterOffset = Globals.Defaults.GetInt32Value(cConfigSection, "offset");
+            if (Globals.Config.Get(cConfigSection, "port", 1, 65535, ref port) != Configuration.ConfigRes.Ok)
+                Console.WriteLine("port ungültig oder fehlt, nutze standard");
 
-            if (old == null)
-                old = Globals.Defaults.GetBoolValue(cConfigSection, "oldproto");
-
-            if (adapterOffset < 0 || adapterOffset > 222)
-            {
-                Console.WriteLine($"Ungültiger adapter-offset: {adapterOffset}");
-                adapterOffset = Globals.Defaults.GetInt32Value(cConfigSection, "offset");
-            }
-
-            if (port <= 1 || port >= 65536)
-            {
-                Console.WriteLine($"Ungültiger port: {port}");
-                port = Globals.Defaults.GetInt32Value(cConfigSection, "port");
-            }
-
-            _ApiClient = new DvbApiClient(srv, port.Value, Globals.PipeName, Globals.Info, old.Value, adapterOffset.Value);
+            _ApiClient = new DvbApiClient(srv, port, Globals.PipeName, Globals.Info, old, adapterOffset);
             _ApiClient.Start();
         }
     }

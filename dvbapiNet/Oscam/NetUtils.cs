@@ -2,6 +2,9 @@
 
 namespace dvbapiNet.Oscam
 {
+    /// <summary>
+    /// Enthält statische ggf. nützliche Methoden für Netzwerkdatenverarbeitung
+    /// </summary>
     internal class NetUtils
     {
         /// <summary>

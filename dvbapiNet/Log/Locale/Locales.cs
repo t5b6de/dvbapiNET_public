@@ -5,8 +5,16 @@ using System.Text;
 
 namespace dvbapiNet.Log.Locale
 {
+    /// <summary>
+    /// Basisklasse für die Lokalisierung
+    /// </summary>
     internal static partial class Locales
     {
+        /// <summary>
+        /// Lädt die Standardtexte anhand der gegebenen Sprache.
+        /// </summary>
+        /// <param name="lang">2 Zeichen Sprachcode</param>
+        /// <returns>Dictionary mit Sprach</returns>
         public static Dictionary<Message, string> GetDefault(string lang)
         {
             Dictionary<Message, string> result;

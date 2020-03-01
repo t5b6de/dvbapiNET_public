@@ -2,6 +2,9 @@
 
 namespace dvbapiNet.DvbViewer
 {
+    /// <summary>
+    /// Channel-Structure vom DVBViewer
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TChannel
     {

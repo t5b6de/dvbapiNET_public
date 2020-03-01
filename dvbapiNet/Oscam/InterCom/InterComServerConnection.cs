@@ -3,6 +3,9 @@ using System.Net.Sockets;
 
 namespace dvbapiNet.Oscam.InterCom
 {
+    /// <summary>
+    /// Intercom Endpoint Variante für die Verbindung auf Seite des DvbapiClient
+    /// </summary>
     internal class InterComServerConnection : InterComEndPoint
     {
         /// <summary>

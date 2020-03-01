@@ -8,6 +8,9 @@ using System.Threading;
 
 namespace dvbapiNet.Oscam.InterCom
 {
+    /// <summary>
+    /// Intercom-Server, lässt sich nur einmal am System starten, sofern nicht unterschiedliche Pipe-Namen angegeben wurden.
+    /// </summary>
     internal class InterComServer : InterComEndPoint
     {
         private NamedPipeServerStream _MainPipe;

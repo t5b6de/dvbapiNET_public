@@ -1,5 +1,8 @@
 ﻿namespace dvbapiNet.Dvb.Crypto
 {
+    /// <summary>
+    /// Auflistung Verfügbarer Descrambler-Algorithmen
+    /// </summary>
     public enum DescramblerAlgo : int
     {
         DvbCsa = 0,

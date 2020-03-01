@@ -7,6 +7,9 @@ using System.Net.Sockets;
 
 namespace dvbapiNet.Oscam.InterCom
 {
+    /// <summary>
+    /// Basisklasse für die Intercom-Verbindungen, stellt Grundfunktionen bereit
+    /// </summary>
     internal abstract class InterComEndPoint : IDisposable
     {
         protected ulong _AuthToken;
@@ -93,7 +96,7 @@ namespace dvbapiNet.Oscam.InterCom
                 {
                     _IcSckt.Send(_OutBuffer, (int)_MsOut.Position, SocketFlags.None);
                 }
-                catch (Exception ex)
+                catch
                 {
                     this.Disconnect();
                 }

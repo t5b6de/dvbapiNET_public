@@ -4,6 +4,9 @@ using System.Text;
 
 namespace dvbapiNet.Oscam.Packets
 {
+    /// <summary>
+    /// ECM-Info mit informationen über letzte erfolgreiche ecm
+    /// </summary>
     internal class EcmInfo
     {
         public int CaId

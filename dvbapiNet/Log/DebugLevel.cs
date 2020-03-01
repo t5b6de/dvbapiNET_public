@@ -2,6 +2,9 @@
 
 namespace dvbapiNet.Log
 {
+    /// <summary>
+    /// Auflistung der verfügbaren Debuglevel.
+    /// </summary>
     [Flags]
     internal enum DebugLevel : uint
     {

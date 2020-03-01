@@ -1,5 +1,8 @@
 ﻿namespace dvbapiNet.Oscam.Packets
 {
+    /// <summary>
+    /// Dvbapiserver info von oscam an diesen Client gesendet.
+    /// </summary>
     internal class DvbApiServerInfo
     {
         private string _Info;

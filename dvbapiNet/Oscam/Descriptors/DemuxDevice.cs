@@ -3,6 +3,9 @@ using System.IO;
 
 namespace dvbapiNet.Oscam.Descriptors
 {
+    /// <summary>
+    /// OScam-spezifischer Descriptor für CaPMT zwecks Übergabe des verwendeten Demuxers
+    /// </summary>
     internal sealed class DemuxDevice : DescriptorBase
     {
         public byte Device { get; }

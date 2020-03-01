@@ -16,7 +16,7 @@ using System.Diagnostics;
 namespace dvbapiNet.Log
 {
     /// <summary>
-    /// Stellt alle f+r d
+    /// Stellt diverse Funktionen für die Erstellung von Log-Nachrichte
     /// </summary>
     internal static class LogProvider
     {
@@ -25,31 +25,37 @@ namespace dvbapiNet.Log
         private static DebugLevel _Debug;
         private static int _InstanceNumber;
         private static bool _IsRunning;
-        private static object _LockHelper;
         private static Queue<LogEntry> _LogQueue;
         private static Thread _LogThrd;
         private static ManualResetEvent _LogWait;
+        private static ManualResetEvent _EndWait;
+
+        private static bool _PrettyHex;
 
         public delegate void Line(string line);
 
         public static event Line LineWritten;
 
+        /// <summary>
+        /// Initialisiert das Log-System startet Writer-Prozess
+        /// </summary>
         static LogProvider()
         {
             _InstanceNumber = -1;
-            _LockHelper = new object(); // kleine Hilfsinstanz für lock(){}
             _LogWait = new ManualResetEvent(false);
+            _EndWait = new ManualResetEvent(false);
             _LogQueue = new Queue<LogEntry>();
             _LogThrd = new Thread(Writer);
             _IsRunning = true;
+            _PrettyHex = false;
 
-            int? tmp = Globals.Config.GetInt32Value(cConfigSection, "debug");
+            int tmp = 0;
 
-            if (tmp == null)
-                tmp = Globals.Defaults.GetInt32Value(cConfigSection, "debug");
+            Globals.Config.Get(cConfigSection, "pretty", ref _PrettyHex);
+            Globals.Config.Get(cConfigSection, "debug", 0, int.MaxValue, ref tmp);
 
             _Debug = (DebugLevel)tmp;
-
+            _LogThrd.IsBackground = true;
             _LogThrd.Start();
 
             LineWritten += Globals.ExternalLogHandler;
@@ -68,11 +74,14 @@ namespace dvbapiNet.Log
             }
         }
 
+        /// <summary>
+        /// Stoppt den Writer-Thread
+        /// </summary>
         public static void Dispose()
         {
-            //TODO Disposal
             _IsRunning = false;
             _LogWait.Set();
+            _EndWait.WaitOne(5000); // Timeout falls etwas hängt.
         }
 
         /// <summary>
@@ -86,6 +95,8 @@ namespace dvbapiNet.Log
 
         /// <summary>
         /// Schreibt einen Hex-Dump in die Logdatei.
+        /// TODO: muss umgebaut werden, im Add nur noch Array kopieren.
+        /// Ableitung von Logentry erstellen
         /// </summary>
         /// <param name="level"></param>
         /// <param name="str"></param>
@@ -97,47 +108,37 @@ namespace dvbapiNet.Log
             if (!_Debug.HasFlag(level))
                 return;
 
-            StringBuilder sb = new StringBuilder();
+            DumpLogEntry dle = new DumpLogEntry(section, str, data, offset, len, _PrettyHex);
 
-            for (int i = 0; i < len; i++)
-            {
-                if (i > 0 && i % 16 == 0)
-                {
-                    sb.AppendLine();
-                }
-                else if (i > 0)
-                {
-                    sb.Append(' ');
-                }
-
-                sb.Append(data[i + offset].ToString("x2"));
-            }
-
-            if (str == Message.Empty)
-            {
-                Add(level, section, Message.SingleParam, sb.ToString());
-            }
-            else
-            {
-                Add(level, section, Message.HexDump, str, Environment.NewLine, sb.ToString());
-            }
-
-            sb.Clear();
+            lock (_LogQueue)
+                _LogQueue.Enqueue(dle);
         }
 
+        /// <summary>
+        /// Loggt einfache Nachricht und fügt parameter in Message ein.
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="section"></param>
+        /// <param name="m"></param>
+        /// <param name="values"></param>
         public static void Add(DebugLevel level, string section, Message m, params object[] values)
         {
             if (!_Debug.HasFlag(level))
                 return;
 
             lock (_LogQueue)
-            {
+
                 _LogQueue.Enqueue(new LogEntry() { DLevel = level, Message = m, Values = values, Section = section, EventFired = false });
-            }
 
             _LogWait.Set();
         }
 
+        /// <summary>
+        /// Loggt Ausnahme
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="msg"></param>
+        /// <param name="ex"></param>
         public static void Exception(string section, Message msg, Exception ex)
         {
             if (msg == Message.Empty)
@@ -150,11 +151,24 @@ namespace dvbapiNet.Log
             }
         }
 
+        /// <summary>
+        /// Loggt ECM-Info
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="section"></param>
+        /// <param name="info"></param>
         public static void Add(DebugLevel level, string section, EcmInfo info)
         {
             Add(level, section, Message.SingleParam, info);
         }
 
+        /// <summary>
+        /// Loggt ECM
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="section"></param>
+        /// <param name="parity"></param>
+        /// <param name="cw"></param>
         public static void WriteCWLog(DebugLevel level, string section, DescramblerParity parity, byte[] cw)
         {
             if (!_Debug.HasFlag(level))
@@ -241,11 +255,11 @@ namespace dvbapiNet.Log
                 _LogWait.Reset();
 
                 if (!_IsRunning)
-                    return;
+                    break;
 
                 bool result;
 
-                while (_LogQueue.Count > 0 && _IsRunning)
+                while (_LogQueue.Count > 0)
                 {
                     result = false;
                     LogEntry le;
@@ -271,6 +285,8 @@ namespace dvbapiNet.Log
                     }
                 }
             }
+
+            _EndWait.Set();
         }
     }
 }

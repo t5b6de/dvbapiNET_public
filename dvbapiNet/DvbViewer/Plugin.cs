@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 namespace dvbapiNet.DvbViewer
 {
     /// <summary>
-    /// Plugin-Schnittstelle zum DVBViewer, hier sind die exports drin.
+    /// Plugin-Schnittstelle zum DVBViewer
     /// </summary>
     public static class Plugin
     {
@@ -61,22 +61,43 @@ namespace dvbapiNet.DvbViewer
             }
         }
 
+        /// <summary>
+        /// Sendet per PostMessage asynchron einen Request an den DVBViewer zwecks hinzufügen von PIDs im PidFilter
+        /// Wichtig bei Hardwarefilter oder SAT>IP / DVB>IP / RTSP Geräten die sonst keine ECM-Streams rausgeben
+        /// </summary>
+        /// <param name="sender">DvbapiAdapter-Instanz von dem dieser Request ausgeht</param>
+        /// <param name="pid">PID für den Filter</param>
         private static void AddPid(DvbApiAdapter sender, ushort pid)
         {
             PostMessage(_DvbViewerHwnd, (uint)WMessage.DvbViewer, new UIntPtr((uint)ParamMessages.StartFilter), new IntPtr(pid));
         }
 
+        /// <summary>
+        /// Gibt Zeiger auf den Copyright-String vom Plugin an den DVBViewer zurück
+        /// </summary>
+        /// <returns></returns>
         [DllExport(ExportName = "Copyright", CallingConvention = CallingConvention.StdCall)]
         public static IntPtr Copyright()
         {
             return _CopyrightString;
         }
 
+        /// <summary>
+        /// Sendt per PostMessage Asynchron einen Request an den DVBViewer zwecks entfernen von PIDs im Pidfilter
+        /// </summary>
+        /// <param name="sender">DvbapiAdapter-Instanz von dem dieser Request ausgeht</param>
+        /// <param name="pid">PID für den Filter</param>
         private static void DelPid(DvbApiAdapter sender, ushort pid)
         {
             PostMessage(_DvbViewerHwnd, (uint)WMessage.DvbViewer, new UIntPtr((uint)ParamMessages.StopFilter), new IntPtr(pid));
         }
 
+        /// <summary>
+        /// Event-Call vom DVBViewer, Grundsätzliche Steuerung des Plugins über den DVBViewer läuft über diese Funktion.
+        /// </summary>
+        /// <param name="ev">DVBViewer Event welches gefeuert wurde</param>
+        /// <param name="data">Die zum Event verfügbaren Daten.</param>
+        /// <returns>delpi-Bool, 0 = true, 1 = false?</returns>
         [DllExport(ExportName = "EventMsg", CallingConvention = CallingConvention.StdCall)]
         public static int EventMsg(Event ev, IntPtr data)
         {
@@ -104,8 +125,8 @@ namespace dvbapiNet.DvbViewer
 
                         break;
 
-                    case Event.RemoveChannel: // DVBViewer
-                    case Event.DisableTuner: // Recording-Service
+                    case Event.RemoveChannel: // üblicherweise DVBViewer
+                    case Event.DisableTuner: // überlicherweise Recording-Service oder DVBViewer Media Server
 
                         if (_DvbAdapter.IsTuned)
                         {
@@ -127,18 +148,33 @@ namespace dvbapiNet.DvbViewer
             return 0;
         }
 
+        /// <summary>
+        /// Setzt den Apphandle, wird vom DVBViewer aufgerufen, für PostMessage wichtig.
+        /// </summary>
+        /// <param name="wnd">Window-Handle des DVBViewers</param>
+        /// <param name="RebuildFunc">Pointer auf Rebuild-Function</param>
         [DllExport(ExportName = "SetAppHandle", CallingConvention = CallingConvention.StdCall)]
         public static void SetAppHandle(IntPtr wnd, IntPtr RebuildFunc)
         {
             _DvbViewerHwnd = wnd;
         }
 
+        /// <summary>
+        /// Gibt den Zeiger auf den Version-String des Plugins zurück, wird vom DVBViewer aufgerufen
+        /// </summary>
+        /// <returns></returns>
         [DllExport(ExportName = "Version", CallingConvention = CallingConvention.StdCall)]
         public static IntPtr Version()
         {
             return _VersionString;
         }
 
+        /// <summary>
+        /// Execute-Funktion vom DVBViewer,
+        /// </summary>
+        /// <param name="Tuner"></param>
+        /// <param name="pids"></param>
+        /// <returns></returns>
         [DllExport(ExportName = "Execute", CallingConvention = CallingConvention.StdCall)]
         public static byte Execute(IntPtr Tuner, IntPtr pids)
         {
@@ -146,25 +182,46 @@ namespace dvbapiNet.DvbViewer
             return 0;
         }
 
+        /// <summary>
+        /// Gibt einen Zeiger auf den LibTyp-String zurück, wird vom DVBViewer aufgerufen.
+        /// </summary>
+        /// <returns></returns>
         [DllExport(ExportName = "LibTyp", CallingConvention = CallingConvention.StdCall)]
         public static IntPtr LibTyp()
         {
             return _TypeString;
         }
 
+        /// <summary>
+        /// PidCallback-Funktion, wird für alle Packets die über AddPid hinzugefügt wurden, vom DVBViewer einmal aufgerufen.
+        /// </summary>
+        /// <param name="tsPacket"></param>
         [DllExport(ExportName = "PidCallback", CallingConvention = CallingConvention.StdCall)]
         public static void PidCallback(IntPtr tsPacket)
         {
             // Alles hier entfernt. Alles wird nur noch über RawTsCallback erledigt.
             // Grund: Fehler im Dvbviewer Media Server -> Dieser vermischt die Streams und gibt Packets des falschen Transponders aus.
+            // wenn mehrere Transponder gleichzeitig laufen.
         }
 
+        /// <summary>
+        /// Gibt einen Zeiger
+        /// </summary>
+        /// <returns></returns>
         [DllExport(ExportName = "PluginName", CallingConvention = CallingConvention.StdCall)]
         public static IntPtr PluginName()
         {
             return _NameString;
         }
 
+        /// <summary>
+        /// Windows PostMessage
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="wMsg"></param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
         [DllImport("user32.dll")]
         private static extern IntPtr PostMessage(IntPtr hWnd, uint wMsg,
                                 UIntPtr wParam, IntPtr lParam);
@@ -189,6 +246,9 @@ namespace dvbapiNet.DvbViewer
             return 0;
         }
 
+        /// <summary>
+        /// Gibt alle verwendeten Ressourcen wieder frei.
+        /// </summary>
         private static void Dispose()
         {
             _DvbAdapter.Dispose();
@@ -198,6 +258,8 @@ namespace dvbapiNet.DvbViewer
             Marshal.FreeHGlobal(_NameString);
             Marshal.FreeHGlobal(_VersionString);
             Marshal.FreeHGlobal(_NativeTsCallback);
+
+            Globals.Dispose();
         }
     }
 }

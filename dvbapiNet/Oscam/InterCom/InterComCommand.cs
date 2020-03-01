@@ -1,5 +1,8 @@
 ﻿namespace dvbapiNet.Oscam.InterCom
 {
+    /// <summary>
+    /// Auflistung der Intercom-Befehle
+    /// </summary>
     internal enum InterComCommand : int
     {
         // ApiClient -> Adapter

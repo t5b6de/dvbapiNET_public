@@ -1,5 +1,8 @@
 ﻿namespace dvbapiNet.Oscam
 {
+    /// <summary>
+    /// Auflistung aller DVBAPI-Befehle
+    /// </summary>
     internal enum DvbApiCommand : uint
     {
         /*

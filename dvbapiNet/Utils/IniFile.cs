@@ -7,7 +7,7 @@ using System.IO;
 namespace dvbapiNet.Utils
 {
     /// <summary>
-    /// Unvollständige Ini-Implementierung, Save-Funktion fehlt.
+    /// Einfache Ini-Implementierung, ohne Speichern-Funktion
     /// </summary>
     public class IniFile
     {
@@ -52,9 +52,7 @@ namespace dvbapiNet.Utils
         {
             string val = GetValue(section, key);
 
-            int tmp = 0;
-
-            if (val != null && int.TryParse(val, out tmp))
+            if (val != null && int.TryParse(val, out int tmp))
                 return tmp;
 
             return null;
@@ -64,9 +62,7 @@ namespace dvbapiNet.Utils
         {
             string val = GetValue(section, key);
 
-            int tmp = 0;
-
-            if (val != null && int.TryParse(val, out tmp))
+            if (val != null && int.TryParse(val, out int tmp))
                 return tmp != 0;
 
             return null;

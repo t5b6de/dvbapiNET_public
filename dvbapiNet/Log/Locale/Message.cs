@@ -5,6 +5,9 @@ using System.Text;
 
 namespace dvbapiNet.Log.Locale
 {
+    /// <summary>
+    /// Auflistung aller Einzelnachrichten als Verweis auf die Dictionaries in der Lokalisierung
+    /// </summary>
     internal enum Message
     {
         Empty, // keine Nachricht.

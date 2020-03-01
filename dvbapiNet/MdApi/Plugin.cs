@@ -178,6 +178,7 @@ namespace dvbapiNet.MdApi
             {
                 LogProvider.Exception(cLogSection, Message.MdapiUnloadFailed, ex);
             }
+            Globals.Dispose();
         }
 
         /// <summary>

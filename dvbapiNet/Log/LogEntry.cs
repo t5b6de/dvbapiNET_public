@@ -6,16 +6,48 @@ namespace dvbapiNet.Log
 {
     internal class LogEntry
     {
+        /// <summary>
+        /// Die zu schreibende Nachricht
+        /// </summary>
         public Message Message { get; set; }
+
+        /// <summary>
+        /// Debuglevel der Nachricht
+        /// </summary>
         public DebugLevel DLevel { get; set; }
+
+        /// <summary>
+        /// Werte die in die Nachricht geschrieben werden.
+        /// </summary>
         public object[] Values { get; set; }
+
+        /// <summary>
+        /// Section / Herkunft der Nachricht
+        /// </summary>
         public string Section { get; set; }
+
+        /// <summary>
+        /// Dient für externes Logging über Event, ob diese Nachricht bereits darüber ausgegeben wurde, sollte die nachträgliche Verarbeitung
+        /// fehlschlagen, wird dieses nicht nochmal ausgegeben.
+        /// True zu setzen, wenn Ausgabe bereits erfolgt ist.
+        /// </summary>
         public bool EventFired { get; set; }
 
+        /// <summary>
+        /// Nach Aufruf von Prepare beinhaltet diese Eigenschaft die Zeichenfolge die in die
+        /// </summary>
         public string Log { get; private set; }
+
+        /// <summary>
+        /// Log-Eintrag als Byte-Array zum Schreiben in eine Datei.
+        /// </summary>
         public byte[] LogData { get; private set; }
 
-        public void Prepare(int instance)
+        /// <summary>
+        /// Erstellt aus den vorliegenden Daten eine Lognachricht in Textform für die Logdatei
+        /// </summary>
+        /// <param name="instance"></param>
+        public virtual void Prepare(int instance)
         {
             if (LogData != null)
                 return;

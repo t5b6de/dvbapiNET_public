@@ -3,6 +3,9 @@ using System.IO;
 
 namespace dvbapiNet.Oscam.Descriptors
 {
+    /// <summary>
+    /// OScam-spezifischer Descriptor für CaPMT zwecks Übergabe des verwendeten Adapters
+    /// </summary>
     internal sealed class AdapterDevice : DescriptorBase
     {
         public byte Adapter { get; }

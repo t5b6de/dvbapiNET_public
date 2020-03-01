@@ -53,6 +53,10 @@ namespace dvbapiNet.Oscam
             }
         }
 
+        /// <summary>
+        /// Dvbapi Demux-Index, stellt den Demux-Index in Oscam selbst dar. Wird gesetzt sobald Filter angefordert werden.
+        /// Dies stellt einen Workaround dar, oscam sollte keine eigenen Index führen.
+        /// </summary>
         public int DvbApiDemuxIndex { get; private set; }
 
         /// <summary>

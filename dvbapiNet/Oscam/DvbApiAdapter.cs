@@ -3,6 +3,7 @@ using dvbapiNet.Dvb.Crypto;
 using dvbapiNet.Log;
 using dvbapiNet.Log.Locale;
 using dvbapiNet.Oscam.InterCom;
+using dvbapiNet.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +22,8 @@ namespace dvbapiNet.Oscam
         private static DvbApiClient _ApiClient;
         private int _AdapterIndex;
         private int _ServiceId;
+
+        private bool _DumpStream;
 
         /// <summary>
         /// array mit 0x2000 bytes, als Kenner ob für descrambling freigeschaltet.
@@ -152,40 +155,28 @@ namespace dvbapiNet.Oscam
             _AdapterIndex = -1;
 
             _UseMdApi = isMdapi;
+            _DumpStream = false;
+
+            Globals.Config.Get("debug", "streamdump", ref _DumpStream);
 
             try
             {
-                string srv = Globals.Config.GetValue(cConfigSection, "server");
-                int? port = Globals.Config.GetInt32Value(cConfigSection, "port");
-                bool? old = Globals.Config.GetBoolValue(cConfigSection, "oldproto");
+                string srv = "";
+                int port = 0;
+                bool old = false;
 
-                int? adapterOffset = Globals.Config.GetInt32Value(cConfigSection, "offset");
+                int adapterOffset = 0;
 
-                if (string.IsNullOrWhiteSpace(srv)) // fallback default:
-                    srv = Globals.Defaults.GetValue(cConfigSection, "server");
+                Globals.Config.Get(cConfigSection, "server", ref srv);
+                Globals.Config.Get(cConfigSection, "oldproto", ref old);
 
-                if (port == null)
-                    port = Globals.Defaults.GetInt32Value(cConfigSection, "port");
+                if (Globals.Config.Get(cConfigSection, "offset", 0, 128, ref adapterOffset) != Configuration.ConfigRes.Ok)
+                    LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidOffset);
 
-                if (adapterOffset == null)
-                    adapterOffset = Globals.Defaults.GetInt32Value(cConfigSection, "offset");
+                if (Globals.Config.Get(cConfigSection, "port", 1, 65535, ref port) != Configuration.ConfigRes.Ok)
+                    LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidPort);
 
-                if (old == null)
-                    old = Globals.Defaults.GetBoolValue(cConfigSection, "oldproto");
-
-                if (adapterOffset < 0 || adapterOffset > 222)
-                {
-                    LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidOffset, adapterOffset);
-                    adapterOffset = Globals.Defaults.GetInt32Value(cConfigSection, "offset");
-                }
-
-                if (port <= 1 || port >= 65536)
-                {
-                    LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidPort, port);
-                    port = Globals.Defaults.GetInt32Value(cConfigSection, "port");
-                }
-
-                _ApiClient = new DvbApiClient(srv, port.Value, pipeName, Globals.Info, old.Value, adapterOffset.Value);
+                _ApiClient = new DvbApiClient(srv, port, pipeName, Globals.Info, old, adapterOffset);
                 _ApiClient.Start();
             }
             catch (AlreadyRunningException)
@@ -354,13 +345,7 @@ namespace dvbapiNet.Oscam
 
                 try
                 {
-                    bool? dump = Globals.Config.GetBoolValue("debug", "streamdump");
-                    if (dump == null)
-                    {
-                        dump = Globals.Defaults.GetBoolValue("debug", "streamdump");
-                    }
-
-                    if (dump.Value)
+                    if (_DumpStream)
                     {
                         string filename = DateTime.Now.ToString("yyyyMMddHHmmss");
                         filename = $"tsdump-{_AdapterIndex}-{filename}-{sid}-{tsId}.ts";
@@ -822,7 +807,7 @@ namespace dvbapiNet.Oscam
 
             if (index > 0 && _Descramblers[index - 1] == null)
             {
-                Descrambler descr = GetDescrambler(index - 1); // legt zugleich Descrambler an, falls nicht vorhanden.
+                GetDescrambler(index - 1); // legt zugleich Descrambler an, falls nicht vorhanden.
             }
 
             _DescramblePids[pid] = index;

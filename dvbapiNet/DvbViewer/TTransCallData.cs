@@ -3,11 +3,20 @@ using System.Runtime.InteropServices;
 
 namespace dvbapiNet.DvbViewer
 {
-    // Struct zur Kopie in Nichtverwaltetem Speicher mit Zeiger auf Delegat.
+    /// <summary>
+    /// Callback-Structure für DVBViewer Transponder-Callback.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct TTransCallData
     {
+        /// <summary>
+        /// Zeiger auf Delegat im Nichtverwaltetem Speicher
+        /// </summary>
         public IntPtr TransCall;
+
+        /// <summary>
+        /// Parameter für den Delegaten
+        /// </summary>
         public int Param;
     }
 }

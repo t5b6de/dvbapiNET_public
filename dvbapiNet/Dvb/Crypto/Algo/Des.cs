@@ -6,6 +6,9 @@ using System.Security.Cryptography;
 
 namespace dvbapiNet.Dvb.Crypto.Algo
 {
+    /// <summary>
+    ///  Implementiert den DES Algorithmus für TS-Level Descrambling
+    /// </summary>
     public sealed class Des : IDescramblerAlgo
     {
         private const string cLogSection = "descr des";

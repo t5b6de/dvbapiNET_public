@@ -24,6 +24,9 @@ namespace dvbapiNet.Dvb.Crypto
             _Disposed = false;
         }
 
+        /// <summary>
+        /// Initialisiert den Descrambler
+        /// </summary>
         private void Initialize()
         {
             if (_Algo != null)
@@ -42,7 +45,8 @@ namespace dvbapiNet.Dvb.Crypto
         }
 
         /// <summary>
-        /// Globaler Index des Descramblers, definiert von dvbapi
+        /// Globaler Index des Descramblers, vergeben von der dvbapi
+        /// Dient nur zur Identifizierung, hat intern keine weitere Bedeutung.
         /// </summary>
         public int Index { get; set; }
 
@@ -54,7 +58,7 @@ namespace dvbapiNet.Dvb.Crypto
         public void AddToBatch(IntPtr tsPacket)
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             if (_Algo == null)
                 return;
@@ -68,7 +72,7 @@ namespace dvbapiNet.Dvb.Crypto
         public void DescrambleBatch()
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             if (_Algo == null)
                 return;
@@ -83,7 +87,7 @@ namespace dvbapiNet.Dvb.Crypto
         public void DescrambleSingle(IntPtr tsPacket)
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             if (_Algo == null)
                 return;
@@ -97,7 +101,7 @@ namespace dvbapiNet.Dvb.Crypto
         public void Dispose()
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             if (_Algo != null)
             {
@@ -108,10 +112,16 @@ namespace dvbapiNet.Dvb.Crypto
             _Disposed = true;
         }
 
+        /// <summary>
+        /// Setzt Descrambler-Daten, z.B. Key oder Initialisierungsvektor
+        /// </summary>
+        /// <param name="parity">Parität für die die Daten gelten</param>
+        /// <param name="dType">Angabe um welche Art von Daten es sich handelt</param>
+        /// <param name="data">Descrambler-Daten</param>
         public void SetDescramblerData(DescramblerParity parity, DescramblerDataType dType, byte[] data)
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             if (_Algo == null) // Dann oscam ohne ext-CW Support, default CSA initialisieren:
                 Initialize();
@@ -123,10 +133,15 @@ namespace dvbapiNet.Dvb.Crypto
                 LogProvider.WriteCWLog(DebugLevel.ControlWord, cLogSection, parity, data);
         }
 
+        /// <summary>
+        /// Setzt den Descrambler-Modus
+        /// </summary>
+        /// <param name="algo">Zu verwendender Algorithmus</param>
+        /// <param name="mode">Betriebsmodus des Algorithmus, wird für DVB-CSA ignoriert</param>
         public void SetDescramblerMode(DescramblerAlgo algo, DescramblerMode mode)
         {
             if (_Disposed)
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
 
             Type t = null;
 

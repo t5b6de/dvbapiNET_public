@@ -4,7 +4,11 @@ using System.Collections.Generic;
 
 namespace dvbapiNet.Oscam
 {
-    internal class DemuxFilter // https://github.com/torvalds/linux/blob/master/include/uapi/linux/dvb/dmx.h Zeile 173 (2019/10/19)
+    /// <summary>
+    /// Bildet einen Linux DVB-Filter nach. Filtert die Sections nach Anforderung des CA-Moduls.
+    /// https://github.com/torvalds/linux/blob/master/include/uapi/linux/dvb/dmx.h Zeile 173 (2019/10/19)
+    /// </summary>
+    internal class DemuxFilter
     {
         [Flags]
         public enum Flags : int

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace dvbapiNet.Dvb.Types
 {
+    /// <summary>
+    ///
+    /// </summary>
     public class ElementaryStream : IEnumerable<DescriptorBase>
     {
         private List<DescriptorBase> _Descs;

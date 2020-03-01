@@ -1,4 +1,5 @@
-﻿using dvbapiNet.Utils;
+﻿using dvbapiNet.Log;
+using dvbapiNet.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -6,11 +7,13 @@ using System.Reflection;
 
 namespace dvbapiNet
 {
+    /// <summary>
+    /// Stellt Global benötigte Eigenschaften bereit
+    /// </summary>
     public static class Globals
     {
         private const string cName = "dvbapiNET";
-        private static IniFile _ConfigFile;
-        private static IniFile _DefaultConfig;
+        private static Configuration _Config;
         private static DirectoryInfo _HomeDir;
 
         private static string _Info;
@@ -20,26 +23,22 @@ namespace dvbapiNet
 
         public static event ExternalLog LoggedLine;
 
-        public static IniFile Config
+        /// <summary>
+        /// Gibt die Plugin-Konfiguration zurück
+        /// </summary>
+        public static Configuration Config
         {
             get
             {
                 LoadConfig();
 
-                return _ConfigFile;
+                return _Config;
             }
         }
 
-        public static IniFile Defaults
-        {
-            get
-            {
-                LoadDefaults();
-
-                return _DefaultConfig;
-            }
-        }
-
+        /// <summary>
+        /// Gibt die PLugin-Information zurück, z.b. dvbapiNET x.y (#01234abcd)
+        /// </summary>
         public static string Info
         {
             get
@@ -48,6 +47,9 @@ namespace dvbapiNet
             }
         }
 
+        /// <summary>
+        /// Gibt den Pipe-Namen an, der für die Mitteilung der Internen Kommunikationsparameter dient.
+        /// </summary>
         public static string PipeName
         {
             get
@@ -56,6 +58,9 @@ namespace dvbapiNet
             }
         }
 
+        /// <summary>
+        /// Gibt die lokale Assembly zurück
+        /// </summary>
         public static Assembly PluginAssembly
         {
             get
@@ -64,6 +69,9 @@ namespace dvbapiNet
             }
         }
 
+        /// <summary>
+        /// Gibt die FileVersionInfo dieses Plugins zurück.
+        /// </summary>
         public static FileVersionInfo PluginInfo
         {
             get
@@ -72,6 +80,9 @@ namespace dvbapiNet
             }
         }
 
+        /// <summary>
+        /// Gibt das Konfigurationsverzeichnis für dieses Plugin an
+        /// </summary>
         public static DirectoryInfo HomeDirectory
         {
             get
@@ -80,6 +91,9 @@ namespace dvbapiNet
             }
         }
 
+        /// <summary>
+        /// Initialisiert die globalen Variablen
+        /// </summary>
         static Globals()
         {
             _HomeDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), cName));
@@ -101,6 +115,10 @@ namespace dvbapiNet
             _Info = $"{cName} v{ver.Major}.{ver.Minor} (#{hexBuild})";
         }
 
+        /// <summary>
+        /// Gibt den Pfad für die Logdatei zurück.
+        /// </summary>
+        /// <returns></returns>
         public static FileInfo GetLogfile()
         {
             FileInfo f = new FileInfo(Path.Combine(_HomeDir.FullName, cName + ".log"));
@@ -108,27 +126,19 @@ namespace dvbapiNet
             return f;
         }
 
+        /// <summary>
+        /// Lädt die Konfiguration, sofern vorhanden.
+        /// </summary>
         private static void LoadConfig()
         {
-            if (_ConfigFile != null)
+            if (_Config != null)
                 return;
 
             FileInfo f = new FileInfo(Path.Combine(_HomeDir.FullName, cName + ".ini"));
 
-            _ConfigFile = new IniFile(f);
-        }
+            IniFile cfg = new IniFile(f);
 
-        internal static void ExternalLogHandler(string s)
-        {
-            LoggedLine?.Invoke(s);
-        }
-
-        private static void LoadDefaults()
-        {
-            if (_DefaultConfig != null)
-                return;
-
-            _DefaultConfig = new IniFile(null);
+            IniFile def = new IniFile(null);
 
             /*
              * [dvbapi]
@@ -139,18 +149,36 @@ namespace dvbapiNet
              *
              * [log]
              * debug=0
+             * pretty=1
              *
              * [debug]
              * streamdump=0
              */
 
-            _DefaultConfig.SetValue("dvbapi", "server", "127.0.0.1");
-            _DefaultConfig.SetValue("dvbapi", "port", "633");
-            _DefaultConfig.SetValue("dvbapi", "oldproto", "1");
-            _DefaultConfig.SetValue("dvbapi", "offset", "0");
+            def.SetValue("dvbapi", "server", "127.0.0.1");
+            def.SetValue("dvbapi", "port", "633");
+            def.SetValue("dvbapi", "oldproto", "1");
+            def.SetValue("dvbapi", "offset", "0");
 
-            _DefaultConfig.SetValue("log", "debug", "0");
-            _DefaultConfig.SetValue("debug", "streamdump", "0");
+            def.SetValue("log", "debug", "0");
+            def.SetValue("log", "pretty", "1");
+            def.SetValue("debug", "streamdump", "0");
+
+            _Config = new Configuration(cfg, def);
+        }
+
+        /// <summary>
+        /// Ruft das LoggedLine Ereignis auf, wird vom LogProvider verwendet
+        /// </summary>
+        /// <param name="s"></param>
+        internal static void ExternalLogHandler(string s)
+        {
+            LoggedLine?.Invoke(s);
+        }
+
+        public static void Dispose()
+        {
+            LogProvider.Dispose();
         }
     }
 }

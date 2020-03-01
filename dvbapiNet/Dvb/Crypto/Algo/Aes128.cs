@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 namespace dvbapiNet.Dvb.Crypto.Algo
 {
     /// <summary>
-    /// Implementirt den Aes128 Modus
+    /// Implementiert den Aes128 Algorithmus für TS-Level Descrambling
     /// </summary>
     public sealed class Aes128 : IDescramblerAlgo
     {

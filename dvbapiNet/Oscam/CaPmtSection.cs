@@ -7,6 +7,9 @@ using System.Net;
 
 namespace dvbapiNet.Oscam
 {
+    /// <summary>
+    /// CaPMT für Oscam - Enthält alle nötigen Informationen damit Oscam die Entschlüsselung einleiten kann
+    /// </summary>
     public class CaPmtSection
     {
         public enum ListManagement : byte

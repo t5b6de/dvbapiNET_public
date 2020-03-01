@@ -3,6 +3,9 @@ using System.IO;
 
 namespace dvbapiNet.Dvb.Descriptors
 {
+    /// <summary>
+    /// IMplementiert den generischen DVB Descriptor
+    /// </summary>
     public class DescriptorBase
     {
         protected byte[] _Data;

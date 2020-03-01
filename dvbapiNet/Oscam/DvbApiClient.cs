@@ -223,7 +223,6 @@ namespace dvbapiNet.Oscam
             byte[] cw = r.ReadBytes(8);
 
             LogProvider.Add(DebugLevel.DvbApi, cLogSection, Message.DvbapiSetCaDescr, adapter, index, parity);
-            LogProvider.Add(DebugLevel.DvbApi | DebugLevel.HexDump, cLogSection, Message.DvbapiHexCw, cw, 0, cw.Length);
 
             ChannelSession c = _ChanSessions[adapter - _AdapterOffset];
 
@@ -396,9 +395,7 @@ namespace dvbapiNet.Oscam
 
             LogProvider.Add(DebugLevel.DvbApi, cLogSection, Message.DvbapiConnect);
 
-            IPAddress ip = null;
-
-            if (!IPAddress.TryParse(_Host, out ip))
+            if (!IPAddress.TryParse(_Host, out IPAddress ip))
             {
                 try
                 {
@@ -728,7 +725,7 @@ namespace dvbapiNet.Oscam
 
                 ms.Write(header, 0, header.Length);
                 ms.Write(data, 0, data.Length);
-                byte[] d = ms.ToArray();
+
                 SendMessage(ms.ToArray());
             }
         }

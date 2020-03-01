@@ -9,6 +9,7 @@ using System.Text;
 namespace dvbapiNet.Oscam.Descriptors
 {
     /// <summary>
+    /// OScam-spezifischer Descriptor für CaPMT zwecks Übergabe verschiedener Programmparameter
     /// Stellt einen EnigmaNamespaceDescriptor dar, hier eine unvollständige minimalimplementierung
     /// zwecks CAPMT Update bei Oscam.
     /// </summary>

@@ -3,6 +3,9 @@ using System.IO;
 
 namespace dvbapiNet.Oscam.Descriptors
 {
+    /// <summary>
+    /// OScam-spezifischer Descriptor für CaPMT zwecks Übergabe des verwendeten Ca-Device
+    /// </summary>
     internal sealed class CaDevice : DescriptorBase
     {
         public byte Device { get; }

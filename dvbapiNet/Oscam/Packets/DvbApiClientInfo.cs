@@ -4,6 +4,9 @@ using System.Text;
 
 namespace dvbapiNet.Oscam.Packets
 {
+    /// <summary>
+    /// Dvbapiclientinfo, packet für die Richtung vom Dvbapiclient zum Server
+    /// </summary>
     internal class DvbApiClientInfo
     {
         private string _Info;

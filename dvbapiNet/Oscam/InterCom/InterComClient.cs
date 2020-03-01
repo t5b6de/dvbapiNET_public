@@ -4,6 +4,9 @@ using System.Net;
 
 namespace dvbapiNet.Oscam.InterCom
 {
+    /// <summary>
+    /// Stellt einen Intercom-Client dar (Verbindung zwischen DvbapiAdapter und DvbapiClient
+    /// </summary>
     internal class InterComClient : InterComEndPoint
     {
         public InterComClient(string pipeName)

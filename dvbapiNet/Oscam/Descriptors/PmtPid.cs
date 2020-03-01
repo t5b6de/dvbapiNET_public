@@ -4,6 +4,9 @@ using System.IO;
 
 namespace dvbapiNet.Oscam.Descriptors
 {
+    /// <summary>
+    /// OScam-spezifischer Descriptor für CaPMT zwecks Übergabe des der PMT-Pid
+    /// </summary>
     internal sealed class PmtPid : DescriptorBase
     {
         public override int Length

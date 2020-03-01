@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 
 namespace dvbapiNet.Dvb.Crypto.Algo
 {
+    /// <summary>
+    /// Implementiert Schnittstelle zum AES
+    /// </summary>
     public class AesBase : IDisposable
     {
         private AesManaged _Aes;
@@ -11,6 +14,9 @@ namespace dvbapiNet.Dvb.Crypto.Algo
         private byte[] _Iv;
         private byte[] _Key;
 
+        /// <summary>
+        /// True, wenn eine Entschlüsselung möglich (mind. Key ist gesetzt), anderenfalls false.
+        /// </summary>
         public bool CanDescramble
         {
             get; private set;
@@ -24,13 +30,15 @@ namespace dvbapiNet.Dvb.Crypto.Algo
             _Key = new byte[16];
 
             // Standardwerte festlegen:
-            _Aes = new AesManaged();
-            _Aes.IV = _Iv;
-            _Aes.Key = _Key;
-            _Aes.Mode = CipherMode.CBC;
-            _Aes.Padding = PaddingMode.None;
-            _Aes.BlockSize = 128;
-            _Aes.FeedbackSize = 128;
+            _Aes = new AesManaged
+            {
+                IV = _Iv,
+                Key = _Key,
+                Mode = CipherMode.CBC,
+                Padding = PaddingMode.None,
+                BlockSize = 128,
+                FeedbackSize = 128
+            };
             _Decryptor = _Aes.CreateDecryptor();
         }
 
@@ -42,7 +50,7 @@ namespace dvbapiNet.Dvb.Crypto.Algo
         /// <param name="len">Menge der zu entschlüsselnen Bytes</param>
         public void Decrypt(byte[] block, int offset, int len)
         {
-            int ret = _Decryptor.TransformBlock(block, offset, len, block, offset);
+            _Decryptor.TransformBlock(block, offset, len, block, offset);
 
             if (_Cipher == CipherMode.CBC)
             {
@@ -60,6 +68,10 @@ namespace dvbapiNet.Dvb.Crypto.Algo
             _Aes = null;
         }
 
+        /// <summary>
+        /// Setzt den Initialisierungsvektor für die Entschlüsselung
+        /// </summary>
+        /// <param name="iv"></param>
         public void SetIv(byte[] iv)
         {
             Array.Copy(iv, _Iv, _Iv.Length);
@@ -70,6 +82,10 @@ namespace dvbapiNet.Dvb.Crypto.Algo
             _Decryptor = _Aes.CreateDecryptor();
         }
 
+        /// <summary>
+        /// Setzt den Schlüssel für die Entschlüsselung
+        /// </summary>
+        /// <param name="key"></param>
         public void SetKey(byte[] key)
         {
             Array.Copy(key, _Key, _Key.Length);
@@ -82,6 +98,10 @@ namespace dvbapiNet.Dvb.Crypto.Algo
             CanDescramble = true; // minimum Key muss gesetzt sein.
         }
 
+        /// <summary>
+        /// Setzt den Betriebsmodus für die Verschlüsselung
+        /// </summary>
+        /// <param name="mode"></param>
         public void SetMode(CipherMode mode)
         {
             if (_Cipher == mode)

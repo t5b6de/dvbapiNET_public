@@ -9,9 +9,11 @@ using System.Text.RegularExpressions;
 
 namespace dvbapiNet.Log.Locale
 {
+    /// <summary>
+    /// KLasse für die Bereitstellung und Übersetzung der Lognachrichten in lokalisierte Zeichenfolgen.
+    /// </summary>
     internal static class MessageProvider
     {
-        private const string cLogSection = "log messages";
         private static Dictionary<Message, string> _Messages;
         private static string _LocaleCode;
 
