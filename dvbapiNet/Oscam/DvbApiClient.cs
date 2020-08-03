@@ -24,11 +24,8 @@ namespace dvbapiNet.Oscam
     public class DvbApiClient : IDisposable
     {
         private const string cLogSection = "dvbapiclient";
-        private const byte cMsgStart = 0xa5;
 
-        private const int cOldProto = 2;
-
-        private const int cSuppProto = 3;
+        private const int cSuppProto = 2;
 
         private Socket _ApiSckt;
 
@@ -49,22 +46,19 @@ namespace dvbapiNet.Oscam
 
         // DVBAPI Protocol Version
         // DVBAPI Alte Protocol Version
-        private bool _LimitOldProtocol;
 
-        private uint _MsgId = 0;
         private string _PipeName;
         private int _Port;
         private byte[] _RecvBuff;
 
         private DvbApiServerInfo _ServerInfo;
-        private int _UseProto;
+
+        //private int _UseProto;
         private int _AdapterOffset;
 
-        public DvbApiClient(string host, int port, string pipeName, string clientInfo, bool useOldProcol, int adapterOffset)
+        public DvbApiClient(string host, int port, string pipeName, string clientInfo, int adapterOffset)
         {
-            _UseProto = 0;
             _IsRunning = true;
-            _LimitOldProtocol = useOldProcol;
             _PipeName = pipeName;
             _AdapterOffset = adapterOffset;
 
@@ -96,7 +90,7 @@ namespace dvbapiNet.Oscam
             if (port < 1 || port > 65535)
                 throw new ArgumentOutOfRangeException("Wert außerhalb gültigen Bereichs (1-65535)", "port");
 
-            _ClientInfo = new DvbApiClientInfo(_LimitOldProtocol ? cOldProto : cSuppProto, clientInfo);
+            _ClientInfo = new DvbApiClientInfo(cSuppProto, clientInfo);
             _RecvBuff = new byte[4096];
 
             _ChanSessions = new ChannelSession[32]; // max 32 instanzen.
@@ -360,13 +354,6 @@ namespace dvbapiNet.Oscam
             LogProvider.Add(DebugLevel.Info, cLogSection, Message.DvbapiServerInfo, info, proto);
 
             _ServerInfo = new DvbApiServerInfo(proto, info);
-            _UseProto = _ServerInfo.ProtocolVersion; // hier wissen wir sicher.
-
-            // Oscams eigenartiges, über die Zeit inkonsistentes Vorgehen zwingt uns zu dieser Prüfung:
-            if (_UseProto > (_LimitOldProtocol ? cOldProto : cSuppProto))
-            {
-                _UseProto = (_LimitOldProtocol ? cOldProto : cSuppProto);
-            }
 
             SendCaPmtList();
         }
@@ -426,7 +413,7 @@ namespace dvbapiNet.Oscam
 
             SendMessage(_ClientInfo.GetData(), true);
 
-            _ApiSckt.BeginReceive(_RecvBuff, 0, 1, SocketFlags.None, Receive, _ApiSckt); // msgstart empfangen.
+            _ApiSckt.BeginReceive(_RecvBuff, 0, 4, SocketFlags.None, Receive, _ApiSckt); // msgstart empfangen.
         }
 
         private void HandleApiCommand(DvbApiCommand cmd, Socket s)
@@ -592,64 +579,21 @@ namespace dvbapiNet.Oscam
                 Socket s = iar.AsyncState as Socket;
                 int len = s.EndReceive(iar);
 
-                if (len < 1)
+                if (len < 4)
                 {
                     Reset();
                     return;
                 }
 
-                if (_UseProto == 0)
-                {
-                    if (_RecvBuff[0] == cMsgStart) // dann wohl v3.
-                    {
-                        _UseProto = 3;
-                    }
-                    else
-                    {
-                        _UseProto = 2;
-                        // dann rest vom Befehl empfangen:
-
-                        len += _ApiSckt.Receive(_RecvBuff, 1, 3, SocketFlags.None);
-                    }
-                }
-
-                if (_UseProto == 3)
-                {
-                    if (_RecvBuff[0] != cMsgStart) // dann "out of sync" resync.
-                    {
-                        _ApiSckt.BeginReceive(_RecvBuff, 0, 1, SocketFlags.None, Receive, s); // message start empfangen.
-                        return;
-                    }
-
-                    if (!NetUtils.ReceiveAll(_RecvBuff, _ApiSckt, 8)) // 4 byte msgid und 4byte command
-                    {
-                        Reset();
-                        return;
-                    }
-                }
-                else
-                {
-                    if (len < 4)
-                    {
-                        Reset();
-                        return;
-                    }
-                }
-
                 using (MemoryStream ms = new MemoryStream(_RecvBuff))
                 using (BinaryReader r = new BinaryReader(ms))
                 {
-                    int msgid = 0;
-
-                    if (_UseProto == 3)
-                        msgid = IPAddress.NetworkToHostOrder(r.ReadInt32());
-
                     uint cmd = (uint)IPAddress.NetworkToHostOrder(r.ReadInt32());
 
                     HandleApiCommand((DvbApiCommand)cmd, s);
                 }
 
-                _ApiSckt.BeginReceive(_RecvBuff, 0, _UseProto == 3 ? 1 : 4, SocketFlags.None, Receive, s); // message start empfangen.
+                _ApiSckt.BeginReceive(_RecvBuff, 0, 4, SocketFlags.None, Receive, s); // message start empfangen.
             }
             catch (Exception ex)
             {
@@ -670,7 +614,6 @@ namespace dvbapiNet.Oscam
 
             _ServerInfo = null;
             _IsConnected = false;
-            _UseProto = 0;
             // Reconnect erfolgt bei nächstem Send-Message.
         }
 
@@ -801,27 +744,7 @@ namespace dvbapiNet.Oscam
 
             lock (this) // nichts darf parallel senden.
             {
-                if (_UseProto == 3)
-                {
-                    byte[] send;
-
-                    using (MemoryStream ms = new MemoryStream())
-                    using (BinaryWriter w = new BinaryWriter(ms))
-                    {
-                        w.Write(cMsgStart);
-                        w.Write(IPAddress.HostToNetworkOrder((int)_MsgId++));
-                        w.Write(data);
-                        w.Flush();
-
-                        send = ms.ToArray();
-                    }
-
-                    _ApiSckt.Send(send);
-                }
-                else
-                {
-                    _ApiSckt.Send(data);
-                }
+                _ApiSckt.Send(data);
             }
         }
 

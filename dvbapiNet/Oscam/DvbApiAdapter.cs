@@ -163,12 +163,10 @@ namespace dvbapiNet.Oscam
             {
                 string srv = "";
                 int port = 0;
-                bool old = false;
 
                 int adapterOffset = 0;
 
                 Globals.Config.Get(cConfigSection, "server", ref srv);
-                Globals.Config.Get(cConfigSection, "oldproto", ref old);
 
                 if (Globals.Config.Get(cConfigSection, "offset", 0, 128, ref adapterOffset) != Configuration.ConfigRes.Ok)
                     LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidOffset);
@@ -176,7 +174,7 @@ namespace dvbapiNet.Oscam
                 if (Globals.Config.Get(cConfigSection, "port", 1, 65535, ref port) != Configuration.ConfigRes.Ok)
                     LogProvider.Add(DebugLevel.Error, cLogSection, Message.AdapterConfigInvalidPort);
 
-                _ApiClient = new DvbApiClient(srv, port, pipeName, Globals.Info, old, adapterOffset);
+                _ApiClient = new DvbApiClient(srv, port, pipeName, Globals.Info, adapterOffset);
                 _ApiClient.Start();
             }
             catch (AlreadyRunningException)

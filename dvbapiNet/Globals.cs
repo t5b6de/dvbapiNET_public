@@ -144,7 +144,6 @@ namespace dvbapiNet
              * [dvbapi]
              * server=127.0.0.1
              * port=633
-             * oldproto=1
              * offset=0
              *
              * [log]
@@ -157,7 +156,6 @@ namespace dvbapiNet
 
             def.SetValue("dvbapi", "server", "127.0.0.1");
             def.SetValue("dvbapi", "port", "633");
-            def.SetValue("dvbapi", "oldproto", "1");
             def.SetValue("dvbapi", "offset", "0");
 
             def.SetValue("log", "debug", "0");
