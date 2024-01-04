@@ -94,6 +94,7 @@
     <Compile Include="Dvb\Crypto\Algo\DesBase.cs" />
     <Compile Include="Dvb\Crypto\Descrambler.cs" />
     <Compile Include="Dvb\Crypto\Algo\DvbCsa.cs" />
+    <Compile Include="Dvb\Crypto\Algo\DvbCsaAlt.cs" />
     <Compile Include="Dvb\Crypto\Algo\IDescramblerAlgo.cs" />
     <Compile Include="Log\DebugLevel.cs" />
     <Compile Include="DvbViewer\TTransCallData.cs" />
