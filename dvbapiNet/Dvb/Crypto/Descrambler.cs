@@ -183,6 +183,15 @@ namespace dvbapiNet.Dvb.Crypto
                                 _Algo = new Aes128();
                             }
                             break;
+                        case DescramblerAlgo.DvbCsaAlt:
+                            if (t != typeof(DvbCsaAlt))
+                            {
+                                if (_Algo != null)
+                                    _Algo.Dispose();
+
+                                _Algo = new DvbCsaAlt();
+                            }
+                            break;
                     }
 
                     _Algo.SetDescramblerMode(mode);
